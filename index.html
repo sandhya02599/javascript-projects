@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            box-sizing: border-box;
+        }
+
+        .Main {
+            width: 100%;
+            height: 100vh;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .music-player {
+            background: #ffe0e5;
+            width: 400px;
+            padding: 25px 35px;
+            text-align: center;
+            border-radius: 15px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        nav .circle {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            background: #fff;
+            color: #f53192;
+            box-shadow: 0 5px 10px rgba(255, 26, 26, 0.22); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .img {
+            width: 150px;
+            border-radius: 50%;
+            border: 8px solid #fff;
+            box-shadow: 0 10px 60px rgba(255, 26, 26, 0.22);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            font-size: 1.5em;
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .progress-container {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        #progress {
+            width: 100%;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="Main">
+        <div class="music-player">
+            <nav>
+                <div class="circle" id="prev-nav">
+                    <i class="fa-solid fa-angle-left"></i>
+                </div>
+                <div class="circle" id="menu">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+            </nav> 
+            <img src="media/song-img.jpg" alt="Song Image" class="img">
+            <h2 id="song-title">Fear</h2>
+            <audio id="audio" src="media/Fear.mp3"></audio>
+            
+
+
+            <div class="controls">
+                <button id="prev-btn" class="control-btn"><i class="fa-solid fa-backward"></i></button>
+                <button id="play" class="control-btn"><i class="fa-solid fa-play"></i></button>
+                <button id="next-btn" class="control-btn"><i class="fa-solid fa-forward"></i></button>
+            </div>
+
+            <div class="progress-container">
+                <input type="range" id="progress" value="0" max="100">
+            </div>
+            <div class="time-info">
+                <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const audio = document.getElementById('audio');
+        const playBtn = document.getElementById('play');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progress = document.getElementById('progress');
+        const songTitle = document.getElementById('song-title');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+
+        const songs = ['Fear', 'song2', 'song3']; // Ensure these songs are in the 'media' folder
+        let songIndex = 0;
+
+        // Load song
+        function loadSong(song) {
+            songTitle.textContent = song;
+            audio.src = `media/${song}.mp3`;
+        }
+
+        // Play song
+        function playSong() {
+            audio.play();
+            playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        }
+
+        // Pause song
+        function pauseSong() {
+            audio.pause();
+            playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        }
+
+        // Toggle play/pause
+        playBtn.addEventListener('click', () => {
+            const isPlaying = !audio.paused;
+            if (isPlaying) {
+                pauseSong();
+            } else {
+                playSong();
+            }
+        });
+
+        // Previous song
+        prevBtn.addEventListener('click', () => {
+            songIndex--;
+            if (songIndex < 0) {
+                songIndex = songs.length - 1;
+            }
+            loadSong(songs[songIndex]);
+            playSong();
+        });
+
+        // Next song
+        nextBtn.addEventListener('click', () => {
+            songIndex++;
+            if (songIndex > songs.length - 1) {
+                songIndex = 0;
+            }
+            loadSong(songs[songIndex]);
+            playSong();
+        });
+
+        // Update progress bar
+        audio.addEventListener('timeupdate', updateProgress);
+
+        function updateProgress() {
+            const { duration, currentTime } = audio;
+            const progressPercent = (currentTime / duration) * 100;
+            progress.value = progressPercent || 0;
+
+            // Update time display
+            currentTimeEl.textContent = formatTime(currentTime);
+            durationEl.textContent = formatTime(duration);
+        }
+
+        // Format time in minutes:seconds
+        function formatTime(time) {
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        // Seek
+        progress.addEventListener('input', (e) => {
+            const { value } = e.target;
+            const duration = audio.duration;
+            audio.currentTime = (value / 100) * duration;
+        });
+
+        // Load initial song
+        loadSong(songs[songIndex]);
+
+    </script>
+</body>
+</html>
